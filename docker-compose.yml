@@ -1,0 +1,140 @@
+version: "3.9"
+name: workspace-gcp-poc-realidad-alterada
+
+# =========================================================
+# 🌍 WORKSPACE: GCP WORKERS LOCAL ENV
+# =========================================================
+# Este compose levanta toda la infraestructura necesaria
+# para desarrollo local:
+# - Pub/Sub Emulator
+# - MinIO (S3 local)
+# - PostgreSQL
+# - API Backend
+# - Frontend (aun no se incluye)
+# - Workers desacoplados
+# =========================================================
+
+services:
+  # =========================================================
+  # 🧱 INFRASTRUCTURE LAYER
+  # =========================================================
+  # Servicios base del sistema (estado, mensajería, storage)
+  # =========================================================
+
+  # 🐇 Pub/Sub Emulator (GCP local)
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+    container_name: infra-pubsub-emulator
+    command: >
+      gcloud beta emulators pubsub start
+      --project=poc-realidad-alterada
+      --host-port=0.0.0.0:8085
+    ports:
+      - "8085:8085"
+
+  # 🪣 MinIO (S3 compatible storage)
+  minio:
+    image: minio/minio:latest
+    container_name: infra-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console UI
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    volumes:
+      - minio_data:/data
+
+  # 🗄️ PostgreSQL (Base de datos principal)
+  db:
+    image: postgres:14
+    container_name: infra-postgres-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # =========================================================
+  # 🚀 APPLICATION SERVICES LAYER
+  # =========================================================
+  # Servicios que exponen lógica de negocio (APIs, frontends)
+  # =========================================================
+
+  # 🚀 Backend API (FastAPI)
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/app/Dockerfile
+    container_name: svc-api-backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - pubsub-emulator
+    env_file:
+      - .env.localdev
+    environment:
+      PYTHONPATH: /app
+    command: uvicorn src.app.main:app --host 0.0.0.0 --port 8080 --reload
+
+  # =========================================================
+  # ⚙️ WORKERS LAYER (EVENT-DRIVEN)
+  # =========================================================
+  # Workers desacoplados que consumen eventos de Pub/Sub
+  # Cada worker debe:
+  # - Tener su propio entrypoint (main.py)
+  # - Escuchar su subscription
+  # - Ejecutar su job handler
+  # =========================================================
+
+  # 🧪 Example Worker (template base)
+  worker-example:
+    build:
+      context: ./workers
+    container_name: worker-example
+    volumes:
+      - ./workers:/app
+    depends_on:
+      - pubsub-emulator
+      - db
+      - minio
+    env_file:
+      - .env.localdev
+    environment:
+      PYTHONPATH: /app
+    command: ["python", "src/worker_system/workers/example/main.py"]
+
+  # =========================================================
+  # 🔮 FUTURE WORKERS (ADD HERE)
+  # =========================================================
+  # Ejemplo:
+  #
+  # worker-extractor:
+  #   ...
+  #
+  # worker-image-processor:
+  #   ...
+  #
+  # worker-ai:
+  #   ...
+  #
+  # Mantener naming consistente:
+  # worker-<dominio>
+  # =========================================================
+
+# =========================================================
+# 💾 VOLUMES (PERSISTENCIA)
+# =========================================================
+# Datos que deben sobrevivir reinicios de contenedores
+# =========================================================
+
+volumes:
+  db_data:
+  minio_data:
