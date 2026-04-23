@@ -37,7 +37,7 @@ foreach ($service in $config.services) {
 
         Write-Host "🔧 $name..."
 
-        $example = Join-Path $dir ".env.example"
+        $example = Join-Path $dir "env.example"
 
         if ($envPath -eq ".") {
             $targetDir = $dir

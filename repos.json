@@ -18,7 +18,7 @@
       "name": "frontend",
       "repo": "https://github.com/hector4like6gorillaz/remix-react-vite",
       "dir": "frontend",
-      "env": ".env.dev",
+      "env": ".env.workspace",
       "env_path": "."
     }
   ]

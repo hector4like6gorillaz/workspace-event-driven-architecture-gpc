@@ -36,7 +36,7 @@ do
   if [ -d "$DIR" ]; then
     echo "🔧 $NAME..."
 
-    EXAMPLE="$DIR/.env.example"
+    EXAMPLE="$DIR/env.example"
 
     
     if [ "$ENV_PATH" == "." ]; then
