@@ -1,5 +1,5 @@
 version: "3.9"
-name: workspace-gcp-poc-realidad-alterada
+name: workspace-gcp-poc-template
 
 # =========================================================
 # 🌍 WORKSPACE: GCP WORKERS LOCAL ENV
@@ -15,6 +15,7 @@ name: workspace-gcp-poc-realidad-alterada
 # =========================================================
 
 services:
+
   # =========================================================
   # 🧱 INFRASTRUCTURE LAYER
   # =========================================================
@@ -26,8 +27,7 @@ services:
     image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
     container_name: infra-pubsub-emulator
     command: >
-      gcloud beta emulators pubsub start
-      --project=poc-realidad-alterada
+      gcloud beta emulators pubsub start --project=poc-realidad-alterada
       --host-port=0.0.0.0:8085
     ports:
       - "8085:8085"
@@ -38,8 +38,8 @@ services:
     container_name: infra-minio
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000" # API
-      - "9001:9001" # Console UI
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: password123
@@ -66,23 +66,51 @@ services:
   # =========================================================
 
   # 🚀 Backend API (FastAPI)
+
   api:
+    container_name: svc-api-backend
     build:
       context: ./backend
       dockerfile: src/app/Dockerfile
-    container_name: svc-api-backend
+
+    env_file:
+      - ./backend/.env.localdev # 👈 usa SOLO esto para variables
+
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app/src
+      - ./backend/pyproject.toml:/app/pyproject.toml
+      - ./backend/config/credentials:/app/credentials
+
     ports:
       - "8080:8080"
+
     depends_on:
       - db
       - pubsub-emulator
-    env_file:
-      - .env.localdev
+
     environment:
-      PYTHONPATH: /app
-    command: uvicorn src.app.main:app --host 0.0.0.0 --port 8080 --reload
+      PYTHONPATH: /app/src
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/sgc-dev.json
+
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload --reload-dir
+      /app/src
+
+  # 🌐 Frontend SSR (Remix)
+
+  front:
+    container_name: svc-frontend-ssr
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env.workspace
+    environment:
+      - NODE_ENV=production
+      - PORT=5173
+    depends_on:
+      - api
 
   # =========================================================
   # ⚙️ WORKERS LAYER (EVENT-DRIVEN)
@@ -94,7 +122,6 @@ services:
   # - Ejecutar su job handler
   # =========================================================
 
-  # 🧪 Example Worker (template base)
   worker-example:
     build:
       context: ./workers
@@ -109,8 +136,7 @@ services:
       - .env.localdev
     environment:
       PYTHONPATH: /app
-    command: ["python", "src/worker_system/workers/example/main.py"]
-
+    command: python src/worker_system/workers/example/main.py
   # =========================================================
   # 🔮 FUTURE WORKERS (ADD HERE)
   # =========================================================
@@ -129,11 +155,11 @@ services:
   # worker-<dominio>
   # =========================================================
 
-# =========================================================
-# 💾 VOLUMES (PERSISTENCIA)
-# =========================================================
-# Datos que deben sobrevivir reinicios de contenedores
-# =========================================================
+  # =========================================================
+  # 💾 VOLUMES (PERSISTENCIA)
+  # =========================================================
+  # Datos que deben sobrevivir reinicios de contenedores
+  # =========================================================
 
 volumes:
   db_data:

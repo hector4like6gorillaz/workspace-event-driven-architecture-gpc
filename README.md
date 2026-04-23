@@ -28,13 +28,16 @@ Esto permite:
 ```bash
 .
 ├── backend/         # API (FastAPI)
+├── frontend/         # Frontend ssr (Remix(react+vite))
 ├── workers/         # Workers desacoplados (event-driven)
 ├── docker-compose.yml
 ├── env.example
 ```
 
 ### 🔹 Backend
+
 Encargado de:
+
 - Exponer endpoints (REST/WebSocket)
 - Publicar eventos en Pub/Sub
 - Orquestar lógica de entrada
@@ -44,12 +47,15 @@ Encargado de:
 ---
 
 ### 🔹 Workers
+
 Encargados de:
+
 - Escuchar eventos desde Pub/Sub
 - Procesar tareas específicas
 - Ejecutar jobs desacoplados
 
 Cada worker debe ser:
+
 - Independiente
 - Escalable
 - Reemplazable
@@ -61,15 +67,18 @@ Cada worker debe ser:
 El workspace levanta los siguientes servicios:
 
 ### 🐇 Pub/Sub Emulator
+
 - Simula Google Pub/Sub localmente
 - Puerto: `8085`
 
 ### 🪣 MinIO (S3 local)
+
 - Storage compatible con S3
 - API: `http://localhost:9000`
 - Console: `http://localhost:9001`
 
 Credenciales por defecto:
+
 ```
 user: admin
 password: password123
@@ -78,10 +87,12 @@ password: password123
 ---
 
 ### 🗄️ PostgreSQL
+
 - Base de datos principal
 - Puerto: `5432`
 
 Credenciales:
+
 ```
 user: admin
 password: password
@@ -91,12 +102,14 @@ db: app_db
 ---
 
 ### 🚀 Backend API
+
 - FastAPI
 - Puerto: `8080`
 
 ---
 
 ### ⚙️ Workers
+
 - Consumidores de eventos
 - Ejemplo incluido: `worker-example`
 
@@ -107,8 +120,8 @@ db: app_db
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <repo>
-cd <repo>
+git clone https://github.com/hector4like6gorillaz/workspace-event-driven-architecture-gpc
+cd workspace-event-driven-architecture-gpc
 ```
 
 ---
@@ -125,21 +138,101 @@ cp env.example .env.localdev
 
 ### 3. Levantar todo el workspace
 
-```bash
-docker compose up --build
-```
+## 🛠️ Makefile Commands Guide
+
+Este proyecto incluye un `Makefile` para facilitar la configuración y ejecución del entorno.
+
+---
+
+## 🧠 Setup (Mac / Linux)
+
+    make setup
+
+Ejecuta el script de configuración inicial para Mac/Linux.
+
+    make git-clone
+
+Clona los repositorios necesarios en Mac/Linux.
+
+---
+
+## 🪟 Setup (Windows)
+
+    make setup-win
+
+Ejecuta el script de configuración en Windows usando PowerShell.
+
+    make git-clone-win
+
+Clona los repositorios necesarios en Windows.
+
+---
+
+## 🚀 Full Environment
+
+    make up
+
+Levanta todo el entorno completo con Docker:
+
+- API: http://localhost:8080
+- MinIO: http://localhost:9001
+- DB: localhost:5432
+
+  make down
+
+Detiene todos los servicios.
+
+    make reset
+
+Reinicia el entorno eliminando contenedores y volúmenes (⚠️ borra datos).
+
+    make logs
+
+Muestra los logs en tiempo real.
+
+---
+
+## 🧱 Infrastructure Only (rápido)
+
+    make infra
+
+Levanta solo la infraestructura básica:
+
+- Pub/Sub Emulator
+- MinIO
+- Base de datos
+
+---
+
+## 🚀 Servicios desacoplados
+
+    make api
+
+Levanta únicamente la API.
+
+    make workers
+
+Levanta los workers.
+
+---
+
+## 🗄️ Base de Datos
+
+    make db
+
+Levanta únicamente la base de datos.
 
 ---
 
 ## 🔥 Servicios Disponibles
 
-| Servicio        | URL / Puerto              |
-|----------------|--------------------------|
-| Backend API    | http://localhost:8080    |
-| MinIO API      | http://localhost:9000    |
-| MinIO Console  | http://localhost:9001    |
-| Pub/Sub        | http://localhost:8085    |
-| PostgreSQL     | localhost:5432           |
+| Servicio      | URL / Puerto          |
+| ------------- | --------------------- |
+| Backend API   | http://localhost:8080 |
+| MinIO API     | http://localhost:9000 |
+| MinIO Console | http://localhost:9001 |
+| Pub/Sub       | http://localhost:8085 |
+| PostgreSQL    | localhost:5432        |
 
 ---
 
@@ -232,6 +325,7 @@ worker-<dominio>
 ```
 
 Ejemplos:
+
 - worker-extractor
 - worker-ai
 - worker-image-processor
@@ -289,8 +383,6 @@ Este workspace está diseñado para:
 
 ## 🚧 Próximas mejoras
 
-- Makefile para levantar servicios individuales
-- Hot reload por servicio
 - Health checks
 - Observabilidad (logs centralizados)
 - Métricas
@@ -309,4 +401,5 @@ Es una base para construir sistemas donde:
 
 ## 👨‍💻 Autor
 
+HB <3
 Template diseñado para acelerar desarrollo backend basado en eventos.
