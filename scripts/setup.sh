@@ -5,11 +5,21 @@ set -e
 echo "🚀 Setting up workspace..."
 
 # =========================================================
-# 🌱 ROOT ENV
+# 🌱 WORKSPACE ENV
 # =========================================================
-if [ ! -f ".env.localdev" ]; then
-  cp env.example .env.localdev
-  echo "✅ .env.localdev created"
+WORKSPACE_ENV=".env.localdev"
+WORKSPACE_EXAMPLE="env.example"
+
+if [ ! -f "$WORKSPACE_EXAMPLE" ]; then
+  echo "❌ Missing env.example in workspace root"
+  exit 1
+fi
+
+if [ ! -f "$WORKSPACE_ENV" ]; then
+  cp "$WORKSPACE_EXAMPLE" "$WORKSPACE_ENV"
+  echo "✅ Workspace .env.localdev created"
+else
+  echo "↩️ Workspace .env.localdev already exists"
 fi
 
 # =========================================================
@@ -38,7 +48,6 @@ do
 
     EXAMPLE="$DIR/env.example"
 
-    
     if [ "$ENV_PATH" == "." ]; then
       TARGET_DIR="$DIR"
     else
@@ -49,7 +58,6 @@ do
 
     if [ -f "$EXAMPLE" ]; then
 
-      
       mkdir -p "$TARGET_DIR"
 
       if [ ! -f "$TARGET" ]; then

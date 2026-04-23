@@ -1,4 +1,3 @@
-version: "3.9"
 name: workspace-gcp-poc-template
 
 # =========================================================
@@ -74,7 +73,7 @@ services:
       dockerfile: src/app/Dockerfile
 
     env_file:
-      - ./backend/.env.localdev # 👈 usa SOLO esto para variables
+      - .env.localdev
 
     volumes:
       - ./backend/src:/app/src

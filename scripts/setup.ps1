@@ -1,14 +1,24 @@
 Write-Host "🚀 Setting up workspace..."
 
+$ErrorActionPreference = "Stop"
+
 # =========================================================
-# 🌱 ROOT ENV
+# 🌱 WORKSPACE ENV
 # =========================================================
 
-if (!(Test-Path ".env.localdev")) {
-    Copy-Item "env.example" ".env.localdev"
-    Write-Host "✅ .env.localdev created"
+$workspaceEnv = ".env.localdev"
+$workspaceExample = "env.example"
+
+if (!(Test-Path $workspaceExample)) {
+    Write-Host "❌ Missing env.example in workspace root"
+    exit 1
+}
+
+if (!(Test-Path $workspaceEnv)) {
+    Copy-Item $workspaceExample $workspaceEnv
+    Write-Host "✅ Workspace .env.localdev created"
 } else {
-    Write-Host "ℹ️ .env.localdev already exists"
+    Write-Host "↩️ Workspace .env.localdev already exists"
 }
 
 # =========================================================
@@ -49,7 +59,6 @@ foreach ($service in $config.services) {
 
         if (Test-Path $example) {
 
-            # Crear directorio si no existe
             if (!(Test-Path $targetDir)) {
                 New-Item -ItemType Directory -Path $targetDir | Out-Null
             }
@@ -62,7 +71,7 @@ foreach ($service in $config.services) {
             }
 
         } else {
-            Write-Host "⚠️ No .env.example in $name"
+            Write-Host "⚠️ No env.example in $name"
         }
 
     } else {
