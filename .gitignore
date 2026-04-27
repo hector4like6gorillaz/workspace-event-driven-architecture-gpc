@@ -1,11 +1,10 @@
-# ==============================================================================
-# --- Build Artifacts & Virtual Environments ---
-# ==============================================================================
-
 
 # Ignore everything inside backend and workers
 /backend/*
 /workers/*
+/dumps/*
+*.dump
+*.sql
 
 # But keep the folders (using .gitkeep)
 /backend/.gitkeep
