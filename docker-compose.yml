@@ -47,7 +47,7 @@ services:
 
   # 🗄️ PostgreSQL (Base de datos principal)
   db:
-    image: postgres:14
+    image: postgres:17.7
     container_name: infra-postgres-db
     environment:
       POSTGRES_USER: admin

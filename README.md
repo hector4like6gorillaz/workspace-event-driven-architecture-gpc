@@ -224,10 +224,128 @@ Levanta únicamente la base de datos.
 
 ---
 
+## 🧪 Database Dumps & Restore (Local ↔ Cloud)
+
+Este workspace incluye herramientas para:
+
+- 📥 Hacer dump de base de datos local
+- ☁️ Hacer dump de Cloud SQL (vía proxy)
+- 🔍 Ver versión de la base de datos remota
+- ♻️ Restaurar dumps en tu entorno local Docker
+
+---
+
+## 🔧 Requisitos
+
+Asegúrate de tener instalado:
+
+- `pg_dump`
+- `psql`
+- `cloud-sql-proxy` (para Cloud SQL)
+
+---
+
+## 🔌 Conexión a Cloud SQL (Proxy)
+
+Antes de hacer dump de Cloud, debes levantar el proxy:
+
+    make proxy-up
+
+⚠️ Deja esta terminal abierta
+
+---
+
+## 📥 Dump de Base de Datos
+
+### 🟢 Dump Local (no comprimido)
+
+    make dump-local
+
+Genera:
+
+    dumps/local_<timestamp>.sql
+
+---
+
+### ☁️ Dump Cloud SQL (comprimido - recomendado)
+
+    make dump-cloud
+
+Genera:
+
+    dumps/cloud_<timestamp>.dump
+
+✔️ Más rápido  
+✔️ Más eficiente  
+✔️ Ideal para restaurar  
+
+---
+
+## 🔍 Ver versión de la base de datos Cloud
+
+    make dump-see-cloud-version
+
+Salida esperada:
+
+    server_version
+    --------------
+    17.7 <- version de ejemplo que podria aparecer
+
+---
+
+## ♻️ Restaurar dump en entorno local (Docker)
+
+### 🟣 Restaurar dump de Cloud
+
+    make restore-cloud FILE=dumps/cloud_<timestamp>.dump
+
+✔️ Limpia la base de datos  
+✔️ Restaura el dump automáticamente  
+✔️ Ignora roles de Cloud (compatibilidad local)
+
+---
+
+## 🧹 Reset manual de base de datos
+
+    make db-reset
+
+---
+
+## 🧠 Notas importantes
+
+- Los dumps de Cloud usan formato `.dump` (binario comprimido)
+- Los dumps locales usan `.sql` (texto plano)
+- El restore usa `pg_restore` con:
+  - `--no-owner`
+  - `--no-privileges`
+- Esto evita errores de roles como:
+  - `cloudsqlsuperuser`
+  - usuarios internos de GCP
+
+---
+
+## 🚀 Flujo recomendado
+
+1. Levantar proxy:
+
+        make proxy-up
+
+2. En otra terminal:
+
+        make dump-cloud
+
+3. Restaurar en local:
+
+        make restore-cloud FILE=dumps/cloud_<timestamp>.dump
+
+---
+
+
 ## 🔥 Servicios Disponibles
 
 | Servicio      | URL / Puerto          |
 | ------------- | --------------------- |
+| Frontend      | http://localhost:5173 |
 | Backend API   | http://localhost:8080 |
 | MinIO API     | http://localhost:9000 |
 | MinIO Console | http://localhost:9001 |
